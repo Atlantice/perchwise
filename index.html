@@ -1,0 +1,1691 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perchwise — Parametric Bird Feeder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Söhne:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --cream: #f4f0e6;
+        --cream-deep: #ebe5d4;
+        --paper: #faf7ee;
+        --ink: #2a2e26;
+        --ink-soft: #4a4f44;
+        --ink-faint: #7a7d72;
+        --sage: #8ba585;
+        --sage-deep: #6b8666;
+        --sage-pale: #c8d4be;
+        --rule: #d8d2c0;
+        --rule-soft: #e6e0cf;
+        --accent: #a8451f;
+        --terracotta: #c4622d;
+        --highlight: #f0d97a;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: "Inter Tight", system-ui, sans-serif;
+        background: var(--cream);
+        color: var(--ink);
+        line-height: 1.6;
+        font-size: 16px;
+        -webkit-font-smoothing: antialiased;
+        background-image:
+          radial-gradient(
+            circle at 20% 10%,
+            rgba(139, 165, 133, 0.04) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 80% 60%,
+            rgba(168, 69, 31, 0.025) 0%,
+            transparent 50%
+          );
+      }
+
+      /* Subtle grain overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0.4;
+        mix-blend-mode: multiply;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.15 0 0 0 0 0.18 0 0 0 0 0.13 0 0 0 0.08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 32px;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* ───────── Header ───────── */
+      header {
+        padding: 48px 0 32px;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+
+      .masthead {
+        font-family: "Fraunces", serif;
+        font-weight: 400;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+      }
+
+      .masthead .glyph {
+        color: var(--sage-deep);
+        margin-right: 6px;
+      }
+
+      .nav {
+        display: flex;
+        gap: 28px;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+      }
+
+      .nav a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.2s;
+      }
+
+      .nav a:hover {
+        color: var(--sage-deep);
+      }
+
+      /* ───────── Hero ───────── */
+      .hero {
+        padding: 80px 0 64px;
+        position: relative;
+      }
+
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin-bottom: 24px;
+      }
+
+      .eyebrow::before {
+        content: "";
+        display: inline-block;
+        width: 24px;
+        height: 1px;
+        background: var(--ink-faint);
+        margin-right: 12px;
+        vertical-align: middle;
+      }
+
+      h1 {
+        font-family: "Fraunces", serif;
+        font-weight: 300;
+        font-size: clamp(48px, 7vw, 88px);
+        line-height: 1;
+        letter-spacing: -0.025em;
+        margin-bottom: 28px;
+        color: var(--ink);
+      }
+
+      h1 em {
+        font-style: italic;
+        font-weight: 400;
+        color: var(--sage-deep);
+      }
+
+      .hero-subtitle {
+        font-family: "Fraunces", serif;
+        font-size: 22px;
+        line-height: 1.45;
+        font-weight: 300;
+        color: var(--ink-soft);
+        max-width: 640px;
+        margin-bottom: 40px;
+      }
+
+      .hero-meta {
+        display: flex;
+        gap: 48px;
+        font-size: 13px;
+        color: var(--ink-faint);
+        padding-top: 32px;
+        border-top: 1px solid var(--rule-soft);
+        flex-wrap: wrap;
+      }
+
+      .hero-meta strong {
+        display: block;
+        font-weight: 500;
+        color: var(--ink);
+        font-size: 14px;
+        margin-bottom: 4px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      /* ───────── Methodology ───────── */
+      .methodology {
+        padding: 80px 0;
+        border-top: 1px solid var(--rule);
+      }
+
+      .section-label {
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-size: 14px;
+        color: var(--sage-deep);
+        margin-bottom: 12px;
+      }
+
+      h2 {
+        font-family: "Fraunces", serif;
+        font-weight: 300;
+        font-size: clamp(32px, 4vw, 44px);
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+        margin-bottom: 32px;
+      }
+
+      .lever-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1px;
+        background: var(--rule);
+        border: 1px solid var(--rule);
+        margin-top: 40px;
+      }
+
+      .lever {
+        background: var(--paper);
+        padding: 32px 28px;
+      }
+
+      .lever-num {
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-weight: 300;
+        font-size: 36px;
+        color: var(--sage);
+        line-height: 1;
+        margin-bottom: 16px;
+      }
+
+      .lever h3 {
+        font-family: "Fraunces", serif;
+        font-weight: 500;
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+
+      .lever p {
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--ink-soft);
+      }
+
+      /* ───────── Region sections ───────── */
+      .region {
+        padding: 80px 0;
+        border-top: 1px solid var(--rule);
+      }
+
+      .region-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 64px;
+        margin-bottom: 48px;
+        align-items: end;
+      }
+
+      .region-title-block {
+      }
+
+      .region-id {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        color: var(--ink-faint);
+        letter-spacing: 0.1em;
+        margin-bottom: 16px;
+      }
+
+      .region h2 {
+        margin-bottom: 16px;
+      }
+
+      .region-targets {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .region-targets dt {
+        font-weight: 500;
+        color: var(--ink);
+        margin-bottom: 4px;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .region-targets dd {
+        color: var(--ink-soft);
+        margin-bottom: 16px;
+        font-style: italic;
+        font-family: "Fraunces", serif;
+        font-size: 15px;
+      }
+
+      /* Tables */
+      .table-wrap {
+        overflow-x: auto;
+        margin: 0 -8px;
+        padding: 0 8px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+        margin-bottom: 32px;
+      }
+
+      thead th {
+        font-family: "Inter Tight", sans-serif;
+        font-weight: 500;
+        text-align: left;
+        padding: 12px 14px 12px 0;
+        border-bottom: 1.5px solid var(--ink);
+        color: var(--ink);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      tbody td {
+        padding: 16px 14px 16px 0;
+        border-bottom: 1px solid var(--rule-soft);
+        color: var(--ink-soft);
+        vertical-align: top;
+      }
+
+      tbody tr:hover td {
+        background: rgba(139, 165, 133, 0.06);
+      }
+
+      tbody td:first-child {
+        font-family: "Fraunces", serif;
+        font-weight: 500;
+        color: var(--ink);
+        font-size: 15px;
+      }
+
+      td.num {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12.5px;
+        color: var(--ink);
+      }
+
+      td.notes {
+        font-size: 12.5px;
+        font-style: italic;
+        color: var(--ink-faint);
+      }
+
+      /* ───────── Preset card ───────── */
+      .preset-card {
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        margin-top: 32px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0;
+      }
+
+      .preset-content {
+        padding: 28px 32px;
+        border-right: 1px solid var(--rule);
+      }
+
+      .preset-label {
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-size: 13px;
+        color: var(--sage-deep);
+        margin-bottom: 8px;
+      }
+
+      .preset-title {
+        font-family: "Fraunces", serif;
+        font-weight: 500;
+        font-size: 18px;
+        margin-bottom: 16px;
+      }
+
+      .preset-code {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        color: var(--ink);
+        line-height: 1.7;
+        background: var(--cream);
+        padding: 16px 20px;
+        border: 1px solid var(--rule-soft);
+        border-left: 3px solid var(--terracotta);
+        overflow-x: auto;
+        white-space: pre;
+      }
+
+      .preset-code .key {
+        color: var(--sage-deep);
+      }
+      .preset-code .num-val {
+        color: var(--accent);
+      }
+      .preset-code .comment {
+        color: var(--ink-faint);
+        font-style: italic;
+      }
+
+      .preset-action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+        background: var(--cream-deep);
+        min-width: 160px;
+      }
+
+      .copy-btn {
+        background: var(--ink);
+        color: var(--cream);
+        border: none;
+        padding: 14px 24px;
+        font-family: "Inter Tight", sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+      }
+
+      .copy-btn:hover {
+        background: var(--sage-deep);
+        transform: translateY(-1px);
+      }
+
+      .copy-btn.copied {
+        background: var(--sage);
+      }
+
+      .copy-btn svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .preset-source {
+        font-size: 12px;
+        color: var(--ink-faint);
+        font-style: italic;
+        font-family: "Fraunces", serif;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid var(--rule-soft);
+      }
+
+      /* ───────── Exclusion section ───────── */
+      .exclusion {
+        padding: 80px 0;
+        border-top: 1px solid var(--rule);
+        background: var(--cream-deep);
+        margin: 0 -32px;
+        padding-left: 32px;
+        padding-right: 32px;
+      }
+
+      .exclusion .container {
+        padding: 0;
+      }
+
+      .caveat {
+        background: var(--paper);
+        border-left: 3px solid var(--accent);
+        padding: 20px 24px;
+        margin-top: 32px;
+        font-size: 14px;
+        color: var(--ink-soft);
+        line-height: 1.6;
+      }
+
+      .caveat strong {
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-weight: 500;
+        color: var(--accent);
+        margin-right: 4px;
+      }
+
+      /* ───────── Custom design section ───────── */
+      .design-steps {
+        padding: 80px 0;
+        border-top: 1px solid var(--rule);
+      }
+
+      .step-list {
+        counter-reset: step;
+        margin-top: 40px;
+        display: grid;
+        gap: 1px;
+        background: var(--rule);
+        border: 1px solid var(--rule);
+      }
+
+      .step {
+        background: var(--paper);
+        padding: 24px 32px;
+        counter-increment: step;
+        display: grid;
+        grid-template-columns: 60px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+
+      .step::before {
+        content: counter(step, decimal-leading-zero);
+        font-family: "Fraunces", serif;
+        font-style: italic;
+        font-weight: 300;
+        font-size: 32px;
+        color: var(--sage);
+        line-height: 1;
+      }
+
+      .step p {
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--ink-soft);
+      }
+
+      /* ───────── Footer ───────── */
+      footer {
+        padding: 64px 0 80px;
+        border-top: 1px solid var(--rule);
+        margin-top: 40px;
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: 48px;
+        margin-bottom: 48px;
+      }
+
+      .footer-grid h4 {
+        font-family: "Fraunces", serif;
+        font-weight: 500;
+        font-size: 14px;
+        margin-bottom: 16px;
+        letter-spacing: 0.02em;
+      }
+
+      .footer-grid ul {
+        list-style: none;
+        font-size: 13px;
+        line-height: 1.9;
+        color: var(--ink-soft);
+      }
+
+      .footer-grid a {
+        color: var(--ink-soft);
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s;
+      }
+
+      .footer-grid a:hover {
+        border-bottom-color: var(--sage-deep);
+      }
+
+      .colophon {
+        font-size: 12px;
+        color: var(--ink-faint);
+        padding-top: 32px;
+        border-top: 1px solid var(--rule-soft);
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      /* ───────── Decorative bird marker ───────── */
+      .bird-mark {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        margin-right: 10px;
+        color: var(--sage-deep);
+        vertical-align: -2px;
+      }
+
+      /* ───────── Toast ───────── */
+      .toast {
+        position: fixed;
+        bottom: 32px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--ink);
+        color: var(--cream);
+        padding: 12px 24px;
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        opacity: 0;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        z-index: 1000;
+        font-family: "Inter Tight", sans-serif;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* ───────── Responsive ───────── */
+      @media (max-width: 768px) {
+        .container {
+          padding: 0 20px;
+        }
+        .header-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .nav {
+          gap: 18px;
+          flex-wrap: wrap;
+        }
+        .region-header {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        .preset-card {
+          grid-template-columns: 1fr;
+        }
+        .preset-content {
+          border-right: none;
+          border-bottom: 1px solid var(--rule);
+        }
+        .footer-grid {
+          grid-template-columns: 1fr;
+          gap: 32px;
+        }
+        .step {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+        .hero-meta {
+          gap: 24px;
+        }
+        .exclusion {
+          margin: 0 -20px;
+          padding-left: 20px;
+          padding-right: 20px;
+        }
+      }
+
+      /* Page-load entrance for hero */
+      .hero > * {
+        opacity: 0;
+        transform: translateY(12px);
+        animation: rise 0.8s ease forwards;
+      }
+      .hero > *:nth-child(1) {
+        animation-delay: 0.05s;
+      }
+      .hero > *:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .hero > *:nth-child(3) {
+        animation-delay: 0.25s;
+      }
+      .hero > *:nth-child(4) {
+        animation-delay: 0.35s;
+      }
+
+      @keyframes rise {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="header-row">
+          <div class="masthead">
+            <span class="glyph">🪶</span> Perchwise · Parametric Bird Feeder
+          </div>
+          <nav class="nav">
+            <a href="#methodology">Method</a>
+            <a href="#eastern-us">Eastern US</a>
+            <a href="#uk">UK</a>
+            <a href="#pnw">Pacific NW</a>
+            <a href="#australia">Australia</a>
+            <a href="#exclusion">Exclusion</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- Hero -->
+      <section class="hero">
+        <div class="container">
+          <div class="eyebrow">Species Selection Guide · v1.0 · Perchwise</div>
+          <h1>One file.<br />Four <em>birds.</em></h1>
+          <p class="hero-subtitle">
+            A reference for tuning the parametric bird feeder model to your
+            target species. Fork the KCL file, set a region preset, and
+            confidently invite the birds you want — while excluding the ones you
+            don't.
+          </p>
+          <div class="hero-meta">
+            <div>
+              <strong>Levers</strong>
+              Five geometric parameters
+            </div>
+            <div>
+              <strong>Regions</strong>
+              Four presets included
+            </div>
+            <div>
+              <strong>Status</strong>
+              Starting values · field-tune in your yard
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Methodology -->
+      <section class="methodology" id="methodology">
+        <div class="container">
+          <div class="section-label">Methodology</div>
+          <h2>Five levers of geometric selectivity.</h2>
+          <p
+            style="
+              max-width: 680px;
+              font-size: 16px;
+              color: var(--ink-soft);
+              line-height: 1.65;
+            "
+          >
+            Selectivity rests on a small number of parameters that map cleanly
+            to bird anatomy and behavior. Understanding what each one does makes
+            it easy to design for species not listed here.
+          </p>
+
+          <div class="lever-grid">
+            <div class="lever">
+              <div class="lever-num">i</div>
+              <h3>Port diameter</h3>
+              <p>
+                Tracks beak-plus-head width. Set just below the head width of
+                the smallest unwanted species — exclusion threshold matters more
+                than the target.
+              </p>
+            </div>
+            <div class="lever">
+              <div class="lever-num">ii</div>
+              <h3>Perch length</h3>
+              <p>
+                Short perches (10–18 mm) favor small clingy birds; long perches
+                (30+ mm) let larger birds settle their full body weight. Set to
+                <code
+                  style="
+                    font-family: &quot;JetBrains Mono&quot;, monospace;
+                    font-size: 13px;
+                  "
+                  >0</code
+                >
+                to remove perches entirely.
+              </p>
+            </div>
+            <div class="lever">
+              <div class="lever-num">iii</div>
+              <h3>Perch angle</h3>
+              <p>
+                The most underused lever. Downward angles (−10° to −20°) favor
+                inverted feeders and physically exclude grackles, starlings, and
+                most blackbirds.
+              </p>
+            </div>
+            <div class="lever">
+              <div class="lever-num">iv</div>
+              <h3>Roof overhang</h3>
+              <p>
+                Keeps seed dry and blocks aerial approach from larger
+                hover-capable birds. Aim for roughly 1.5× the perch projection.
+              </p>
+            </div>
+            <div class="lever">
+              <div class="lever-num">v</div>
+              <h3>Port height from base</h3>
+              <p>
+                Where ports sit vertically on the cylinder. Higher placement (50
+                mm+) suits clinging species that approach from above; lower
+                placement (35 mm) suits perched feeders reaching in from the
+                side.
+              </p>
+            </div>
+          </div>
+
+          <div class="caveat" style="margin-top: 40px">
+            <strong>Note —</strong> Geometric exclusion is statistical, not
+            absolute. Juveniles are smaller than adults of the same species and
+            may pass through openings rated for adults. Treat these values as
+            starting points, observe what actually visits, and iterate.
+          </div>
+        </div>
+      </section>
+
+      <!-- Eastern US -->
+      <section class="region" id="eastern-us">
+        <div class="container">
+          <div class="region-header">
+            <div class="region-title-block">
+              <div class="region-id">REGION 01 / NORTH AMERICA</div>
+              <h2>Eastern US Songbirds</h2>
+            </div>
+            <dl class="region-targets">
+              <dt>Target</dt>
+              <dd>
+                Black-capped & Carolina chickadees, tufted titmouse,
+                white-breasted nuthatch, American goldfinch, house finch, downy
+                woodpecker.
+              </dd>
+              <dt>Excluding</dt>
+              <dd>
+                House sparrow, European starling, common grackle, brown-headed
+                cowbird.
+              </dd>
+            </dl>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Species</th>
+                  <th>Mass (g)</th>
+                  <th>Length (cm)</th>
+                  <th>Posture</th>
+                  <th>Port Ø (mm)</th>
+                  <th>Perch (mm)</th>
+                  <th>Angle (°)</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Black-capped Chickadee</td>
+                  <td class="num">11</td>
+                  <td class="num">13</td>
+                  <td>Inverted-capable</td>
+                  <td class="num">28–32</td>
+                  <td class="num">14–18</td>
+                  <td class="num">−10 to −15</td>
+                  <td class="notes">Hero species for downward-perch design</td>
+                </tr>
+                <tr>
+                  <td>Tufted Titmouse</td>
+                  <td class="num">21</td>
+                  <td class="num">16</td>
+                  <td>Upright, agile</td>
+                  <td class="num">30–32</td>
+                  <td class="num">16–20</td>
+                  <td class="num">−5 to −10</td>
+                  <td class="notes">Slightly larger; similar handling</td>
+                </tr>
+                <tr>
+                  <td>White-breasted Nuthatch</td>
+                  <td class="num">20</td>
+                  <td class="num">14</td>
+                  <td>Head-down clinger</td>
+                  <td class="num">28–32</td>
+                  <td class="num">12 (or none)</td>
+                  <td class="num">−15 to vertical</td>
+                  <td class="notes">Often feeds without perching at all</td>
+                </tr>
+                <tr>
+                  <td>American Goldfinch</td>
+                  <td class="num">13</td>
+                  <td class="num">12</td>
+                  <td>Cling and upright</td>
+                  <td class="num">25–30</td>
+                  <td class="num">14</td>
+                  <td class="num">0 to −10</td>
+                  <td class="notes">
+                    Use nyjer-port variant for goldfinch-only
+                  </td>
+                </tr>
+                <tr>
+                  <td>House Finch</td>
+                  <td class="num">21</td>
+                  <td class="num">14</td>
+                  <td>Upright</td>
+                  <td class="num">30–32</td>
+                  <td class="num">18</td>
+                  <td class="num">0</td>
+                  <td class="notes">Accepts most small-port designs</td>
+                </tr>
+                <tr>
+                  <td>Downy Woodpecker</td>
+                  <td class="num">27</td>
+                  <td class="num">16</td>
+                  <td>Vertical clinger</td>
+                  <td class="num">n/a (suet)</td>
+                  <td class="num">tail prop</td>
+                  <td class="num">vertical</td>
+                  <td class="notes">Use suet-cake variant</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="preset-card">
+            <div class="preset-content">
+              <div class="preset-label">Recommended preset</div>
+              <div class="preset-title">eastern_us_songbirds</div>
+              <pre
+                class="preset-code"
+                id="preset-eastern"
+              ><span class="key">portDiameter</span>        = <span class="num-val">30</span>     <span class="comment">// mm</span>
+<span class="key">perchLength</span>         = <span class="num-val">22</span>     <span class="comment">// mm</span>
+<span class="key">perchAngleDeg</span>       = <span class="num-val">-15</span>    <span class="comment">// degrees</span>
+<span class="key">numPorts</span>            = <span class="num-val">4</span>
+<span class="key">roofOverhang</span>        = <span class="num-val">18</span>     <span class="comment">// mm</span>
+<span class="key">portHeightFromBase</span>  = <span class="num-val">35</span>     <span class="comment">// mm</span></pre>
+              <div class="preset-source">
+                Source: Cornell Lab All About Birds; cross-checked with Sibley.
+              </div>
+            </div>
+            <div class="preset-action">
+              <button
+                class="copy-btn"
+                data-preset="eastern"
+                data-text="portDiameter        = 30
+perchLength         = 22
+perchAngleDeg       = -15
+numPorts            = 4
+roofOverhang        = 18
+portHeightFromBase  = 35"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path
+                    d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                  />
+                </svg>
+                <span class="btn-label">Copy preset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- UK -->
+      <section class="region" id="uk">
+        <div class="container">
+          <div class="region-header">
+            <div class="region-title-block">
+              <div class="region-id">REGION 02 / EUROPE</div>
+              <h2>UK Garden Birds</h2>
+            </div>
+            <dl class="region-targets">
+              <dt>Target</dt>
+              <dd>
+                Blue tit, great tit, coal tit, European robin, goldfinch,
+                chaffinch, dunnock, greenfinch.
+              </dd>
+              <dt>Excluding</dt>
+              <dd>
+                Starling (where invasive), feral pigeon, magpie, gray squirrel.
+              </dd>
+            </dl>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Species</th>
+                  <th>Mass (g)</th>
+                  <th>Length (cm)</th>
+                  <th>Posture</th>
+                  <th>Port Ø (mm)</th>
+                  <th>Perch (mm)</th>
+                  <th>Angle (°)</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Blue Tit</td>
+                  <td class="num">11</td>
+                  <td class="num">12</td>
+                  <td>Inverted-capable</td>
+                  <td class="num">28–32</td>
+                  <td class="num">14–18</td>
+                  <td class="num">−10 to −15</td>
+                  <td class="notes">UK equivalent of chickadee</td>
+                </tr>
+                <tr>
+                  <td>Great Tit</td>
+                  <td class="num">18</td>
+                  <td class="num">14</td>
+                  <td>Inverted-capable</td>
+                  <td class="num">30–34</td>
+                  <td class="num">18–22</td>
+                  <td class="num">−5 to −10</td>
+                  <td class="notes">Larger than blue tit</td>
+                </tr>
+                <tr>
+                  <td>Coal Tit</td>
+                  <td class="num">9</td>
+                  <td class="num">11</td>
+                  <td>Inverted-capable</td>
+                  <td class="num">26–30</td>
+                  <td class="num">14</td>
+                  <td class="num">−10 to −15</td>
+                  <td class="notes">Smallest of the regulars</td>
+                </tr>
+                <tr>
+                  <td>European Robin</td>
+                  <td class="num">18</td>
+                  <td class="num">14</td>
+                  <td>Upright</td>
+                  <td class="num">30–34</td>
+                  <td class="num">22</td>
+                  <td class="num">0</td>
+                  <td class="notes">Prefers level perches</td>
+                </tr>
+                <tr>
+                  <td>Goldfinch</td>
+                  <td class="num">16</td>
+                  <td class="num">13</td>
+                  <td>Cling and upright</td>
+                  <td class="num">26–30</td>
+                  <td class="num">14</td>
+                  <td class="num">0 to −5</td>
+                  <td class="notes">Nyjer-port variant works well</td>
+                </tr>
+                <tr>
+                  <td>Chaffinch</td>
+                  <td class="num">24</td>
+                  <td class="num">15</td>
+                  <td>Upright</td>
+                  <td class="num">32–34</td>
+                  <td class="num">22–25</td>
+                  <td class="num">0</td>
+                  <td class="notes">Needs slightly more perch</td>
+                </tr>
+                <tr>
+                  <td>Dunnock</td>
+                  <td class="num">21</td>
+                  <td class="num">14</td>
+                  <td>Upright, ground-leaning</td>
+                  <td class="num">32</td>
+                  <td class="num">22</td>
+                  <td class="num">0</td>
+                  <td class="notes">Prefers low feeders</td>
+                </tr>
+                <tr>
+                  <td>Greenfinch</td>
+                  <td class="num">28</td>
+                  <td class="num">15</td>
+                  <td>Upright</td>
+                  <td class="num">32–34</td>
+                  <td class="num">22</td>
+                  <td class="num">0</td>
+                  <td class="notes">Robust; handles standard tubes</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="preset-card">
+            <div class="preset-content">
+              <div class="preset-label">Recommended preset</div>
+              <div class="preset-title">uk_garden_birds</div>
+              <pre
+                class="preset-code"
+              ><span class="key">portDiameter</span>        = <span class="num-val">32</span>     <span class="comment">// mm</span>
+<span class="key">perchLength</span>         = <span class="num-val">22</span>     <span class="comment">// mm</span>
+<span class="key">perchAngleDeg</span>       = <span class="num-val">0</span>      <span class="comment">// degrees</span>
+<span class="key">numPorts</span>            = <span class="num-val">4</span>
+<span class="key">roofOverhang</span>        = <span class="num-val">22</span>     <span class="comment">// mm</span>
+<span class="key">portHeightFromBase</span>  = <span class="num-val">35</span>     <span class="comment">// mm</span></pre>
+              <div class="preset-source">
+                Source: BTO Bird Facts; RSPB species guides.
+              </div>
+            </div>
+            <div class="preset-action">
+              <button
+                class="copy-btn"
+                data-preset="uk"
+                data-text="portDiameter        = 32
+perchLength         = 22
+perchAngleDeg       = 0
+numPorts            = 4
+roofOverhang        = 22
+portHeightFromBase  = 35"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path
+                    d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                  />
+                </svg>
+                <span class="btn-label">Copy preset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pacific Northwest -->
+      <section class="region" id="pnw">
+        <div class="container">
+          <div class="region-header">
+            <div class="region-title-block">
+              <div class="region-id">REGION 03 / NORTH AMERICA</div>
+              <h2>Pacific Northwest</h2>
+            </div>
+            <dl class="region-targets">
+              <dt>Target</dt>
+              <dd>
+                Chestnut-backed chickadee, red-breasted nuthatch, pine siskin,
+                dark-eyed junco, Anna's hummingbird (nectar variant).
+              </dd>
+              <dt>Excluding</dt>
+              <dd>House sparrow, European starling, brown-headed cowbird.</dd>
+            </dl>
+          </div>
+
+          <p
+            style="
+              max-width: 720px;
+              margin-bottom: 32px;
+              color: var(--ink-soft);
+              font-style: italic;
+              font-family: &quot;Fraunces&quot;, serif;
+              font-size: 16px;
+            "
+          >
+            This region's signature design move is no perches at all —
+            chestnut-backed chickadees and red-breasted nuthatches prefer to
+            cling and feed inverted, and removing perches entirely is one of the
+            cleanest exclusion mechanisms for sparrows and starlings, which need
+            a perching surface. Ports are also smaller and raised higher on the
+            cylinder to suit clinging approach.
+          </p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Species</th>
+                  <th>Mass (g)</th>
+                  <th>Length (cm)</th>
+                  <th>Posture</th>
+                  <th>Port Ø (mm)</th>
+                  <th>Perch (mm)</th>
+                  <th>Angle (°)</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Chestnut-backed Chickadee</td>
+                  <td class="num">9</td>
+                  <td class="num">12</td>
+                  <td>Inverted-capable</td>
+                  <td class="num">22</td>
+                  <td class="num">0</td>
+                  <td class="num">n/a</td>
+                  <td class="notes">No-perch design; clings to port edge</td>
+                </tr>
+                <tr>
+                  <td>Red-breasted Nuthatch</td>
+                  <td class="num">10</td>
+                  <td class="num">11</td>
+                  <td>Head-down clinger</td>
+                  <td class="num">22</td>
+                  <td class="num">0</td>
+                  <td class="num">n/a</td>
+                  <td class="notes">Will use port without any perch</td>
+                </tr>
+                <tr>
+                  <td>Pine Siskin</td>
+                  <td class="num">14</td>
+                  <td class="num">12</td>
+                  <td>Cling and upright</td>
+                  <td class="num">22</td>
+                  <td class="num">0</td>
+                  <td class="num">n/a</td>
+                  <td class="notes">Mixed flocks with goldfinches</td>
+                </tr>
+                <tr>
+                  <td>Dark-eyed Junco</td>
+                  <td class="num">19</td>
+                  <td class="num">15</td>
+                  <td>Ground-leaning</td>
+                  <td class="num">n/a</td>
+                  <td class="num">platform</td>
+                  <td class="num">0</td>
+                  <td class="notes">Platform feeder variant</td>
+                </tr>
+                <tr>
+                  <td>Anna's Hummingbird</td>
+                  <td class="num">4</td>
+                  <td class="num">10</td>
+                  <td>Hovering</td>
+                  <td class="num">8 × 30 tube</td>
+                  <td class="num">n/a</td>
+                  <td class="num">n/a</td>
+                  <td class="notes">Nectar variant; separate parameter set</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="preset-card">
+            <div class="preset-content">
+              <div class="preset-label">Recommended preset</div>
+              <div class="preset-title">pacific_northwest</div>
+              <pre
+                class="preset-code"
+              ><span class="key">portDiameter</span>        = <span class="num-val">22</span>     <span class="comment">// mm — small round port</span>
+<span class="key">perchLength</span>         = <span class="num-val">0</span>      <span class="comment">// no perch — clinging access only</span>
+<span class="key">perchAngleDeg</span>       = <span class="num-val">0</span>
+<span class="key">numPorts</span>            = <span class="num-val">3</span>
+<span class="key">roofOverhang</span>        = <span class="num-val">15</span>     <span class="comment">// mm</span>
+<span class="key">portHeightFromBase</span>  = <span class="num-val">50</span>     <span class="comment">// mm — raised for clinging approach</span></pre>
+              <div class="preset-source">
+                Source: Cornell Lab All About Birds; Burke Museum bird
+                checklists.
+              </div>
+            </div>
+            <div class="preset-action">
+              <button
+                class="copy-btn"
+                data-preset="pnw"
+                data-text="portDiameter        = 22
+perchLength         = 0
+perchAngleDeg       = 0
+numPorts            = 3
+roofOverhang        = 15
+portHeightFromBase  = 50"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path
+                    d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                  />
+                </svg>
+                <span class="btn-label">Copy preset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Australia -->
+      <section class="region" id="australia">
+        <div class="container">
+          <div class="region-header">
+            <div class="region-title-block">
+              <div class="region-id">REGION 04 / OCEANIA</div>
+              <h2>Australian Honeyeaters</h2>
+            </div>
+            <dl class="region-targets">
+              <dt>Target</dt>
+              <dd>
+                New Holland honeyeater, eastern spinebill, white-plumed
+                honeyeater, brown honeyeater, silvereye.
+              </dd>
+              <dt>Excluding</dt>
+              <dd>
+                Common myna, house sparrow, European starling. (Noisy miner:
+                native but aggressive — your call.)
+              </dd>
+            </dl>
+          </div>
+
+          <p
+            style="
+              max-width: 720px;
+              margin-bottom: 32px;
+              color: var(--ink-soft);
+              font-style: italic;
+              font-family: &quot;Fraunces&quot;, serif;
+              font-size: 16px;
+            "
+          >
+            Honeyeaters have longer slender beaks adapted for nectar feeding,
+            which calls for wider ports than you'd use elsewhere. The current
+            preset uses a 38 mm round port — large enough for a New Holland
+            honeyeater's beak-and-head reach, with longer perches to support the
+            bird's larger body.
+          </p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Species</th>
+                  <th>Mass (g)</th>
+                  <th>Length (cm)</th>
+                  <th>Beak (mm)</th>
+                  <th>Port Shape</th>
+                  <th>Port Dim (mm)</th>
+                  <th>Perch (mm)</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>New Holland Honeyeater</td>
+                  <td class="num">20</td>
+                  <td class="num">18</td>
+                  <td class="num">22</td>
+                  <td>Oval, vertical</td>
+                  <td class="num">35 × 25</td>
+                  <td class="num">22</td>
+                  <td class="notes">Common at feeders; bold</td>
+                </tr>
+                <tr>
+                  <td>Eastern Spinebill</td>
+                  <td class="num">11</td>
+                  <td class="num">15</td>
+                  <td class="num">30</td>
+                  <td>Oval, vertical</td>
+                  <td class="num">30 × 22</td>
+                  <td class="num">18</td>
+                  <td class="notes">Long curved beak; deeper reach</td>
+                </tr>
+                <tr>
+                  <td>White-plumed Honeyeater</td>
+                  <td class="num">19</td>
+                  <td class="num">17</td>
+                  <td class="num">18</td>
+                  <td>Oval</td>
+                  <td class="num">35 × 25</td>
+                  <td class="num">22</td>
+                  <td class="notes">Common in southeastern AU</td>
+                </tr>
+                <tr>
+                  <td>Brown Honeyeater</td>
+                  <td class="num">11</td>
+                  <td class="num">13</td>
+                  <td class="num">16</td>
+                  <td>Round / oval</td>
+                  <td class="num">30</td>
+                  <td class="num">18</td>
+                  <td class="notes">Smaller, more cautious</td>
+                </tr>
+                <tr>
+                  <td>Silvereye</td>
+                  <td class="num">10</td>
+                  <td class="num">12</td>
+                  <td class="num">9</td>
+                  <td>Round</td>
+                  <td class="num">28</td>
+                  <td class="num">18</td>
+                  <td class="notes">Co-occurs at feeders</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="preset-card">
+            <div class="preset-content">
+              <div class="preset-label">Recommended preset</div>
+              <div class="preset-title">australian_honeyeaters</div>
+              <pre
+                class="preset-code"
+              ><span class="key">portDiameter</span>        = <span class="num-val">38</span>     <span class="comment">// mm — wider for longer beaks</span>
+<span class="key">perchLength</span>         = <span class="num-val">25</span>     <span class="comment">// mm</span>
+<span class="key">perchAngleDeg</span>       = <span class="num-val">0</span>
+<span class="key">numPorts</span>            = <span class="num-val">3</span>
+<span class="key">roofOverhang</span>        = <span class="num-val">28</span>     <span class="comment">// mm</span>
+<span class="key">portHeightFromBase</span>  = <span class="num-val">35</span>     <span class="comment">// mm</span></pre>
+              <div class="preset-source">
+                Source: Birdlife Australia; CSIRO; HANZAB where accessible.
+              </div>
+            </div>
+            <div class="preset-action">
+              <button
+                class="copy-btn"
+                data-preset="au"
+                data-text="portDiameter        = 38
+perchLength         = 25
+perchAngleDeg       = 0
+numPorts            = 3
+roofOverhang        = 28
+portHeightFromBase  = 35"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path
+                    d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"
+                  />
+                </svg>
+                <span class="btn-label">Copy preset</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Exclusion Reference -->
+      <section class="exclusion" id="exclusion">
+        <div class="container">
+          <div class="section-label">Reverse reference</div>
+          <h2>Exclusion thresholds.</h2>
+          <p
+            style="
+              max-width: 680px;
+              font-size: 16px;
+              color: var(--ink-soft);
+              line-height: 1.65;
+              margin-bottom: 16px;
+            "
+          >
+            If you know what you want to
+            <em style="font-family: Fraunces, serif">exclude</em>, work backward
+            from these thresholds.
+          </p>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Unwanted Species</th>
+                  <th>Mass (g)</th>
+                  <th>Head W (mm)</th>
+                  <th>Port Ø Below</th>
+                  <th>Perch Below</th>
+                  <th>Angle Below</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>House Sparrow</td>
+                  <td class="num">28</td>
+                  <td class="num">18</td>
+                  <td class="num">—</td>
+                  <td class="num">18 mm</td>
+                  <td class="num">—</td>
+                  <td class="notes">Combine perch geometry + seed type</td>
+                </tr>
+                <tr>
+                  <td>European Starling</td>
+                  <td class="num">75–90</td>
+                  <td class="num">28</td>
+                  <td class="num">32 mm</td>
+                  <td class="num">22 mm</td>
+                  <td class="num">−5°</td>
+                  <td class="notes">~28 mm gap excludes adults</td>
+                </tr>
+                <tr>
+                  <td>Common Grackle</td>
+                  <td class="num">115</td>
+                  <td class="num">32</td>
+                  <td class="num">34 mm</td>
+                  <td class="num">25 mm</td>
+                  <td class="num">−5°</td>
+                  <td class="notes">Long tail destabilizes them</td>
+                </tr>
+                <tr>
+                  <td>Brown-headed Cowbird</td>
+                  <td class="num">44</td>
+                  <td class="num">22</td>
+                  <td class="num">30 mm</td>
+                  <td class="num">20 mm</td>
+                  <td class="num">0°</td>
+                  <td class="notes">Often follows flocking birds</td>
+                </tr>
+                <tr>
+                  <td>Common Myna (AU)</td>
+                  <td class="num">110</td>
+                  <td class="num">30</td>
+                  <td class="num">32 mm</td>
+                  <td class="num">22 mm</td>
+                  <td class="num">0°</td>
+                  <td class="notes">Highly invasive; exclude aggressively</td>
+                </tr>
+                <tr>
+                  <td>Feral Pigeon</td>
+                  <td class="num">350</td>
+                  <td class="num">35</td>
+                  <td class="num">—</td>
+                  <td class="num">—</td>
+                  <td class="num">—</td>
+                  <td class="notes">Tube feeders inherently exclude</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="caveat">
+            <strong>Caveat —</strong> Juveniles are smaller than adults of the
+            same species. A port rated to exclude adult starlings may admit
+            juveniles for the few weeks they're at fledgling size. This is not a
+            design flaw — it's a property of geometric exclusion that any honest
+            birder will recognize.
+          </div>
+        </div>
+      </section>
+
+      <!-- Designing for unlisted species -->
+      <section class="design-steps">
+        <div class="container">
+          <div class="section-label">Generalize the method</div>
+          <h2>Designing for a species not listed.</h2>
+          <p
+            style="
+              max-width: 680px;
+              font-size: 16px;
+              color: var(--ink-soft);
+              line-height: 1.65;
+            "
+          >
+            The methodology generalizes. To add a new target species, work
+            through the seven steps below — and if your preset works in your
+            area, contribute it back.
+          </p>
+
+          <div class="step-list">
+            <div class="step">
+              <p>
+                Look up body mass, body length, and beak length in Cornell Birds
+                of the World, your regional ornithological handbook, or a
+                peer-reviewed source. Cross-check at least one source.
+              </p>
+            </div>
+            <div class="step">
+              <p>
+                Estimate head width as roughly 60–70% of body width at the
+                shoulders, or use direct measurements where available.
+              </p>
+            </div>
+            <div class="step">
+              <p>
+                Set port diameter to head width + 4–6 mm clearance —
+                <em>unless</em> a smaller unwanted species shares your area, in
+                which case set it just below that species' head width.
+              </p>
+            </div>
+            <div class="step">
+              <p>
+                Set perch length to roughly 1.0–1.3× the foot-to-shoulder
+                distance — long enough to grip, short enough that body weight
+                doesn't fully settle.
+              </p>
+            </div>
+            <div class="step">
+              <p>
+                Set perch angle based on feeding posture: 0° for upright
+                feeders, −10° to −15° for inverted-capable species, vertical or
+                no perch for clingers.
+              </p>
+            </div>
+            <div class="step">
+              <p>
+                Set roof overhang to roughly 1.5× perch projection, or larger in
+                high-rainfall regions.
+              </p>
+            </div>
+            <div class="step">
+              <p>
+                Print, install, observe for two weeks, iterate. If the preset
+                works, fork the KCL file and open a pull request.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <h4>About this guide</h4>
+            <p
+              style="font-size: 13px; color: var(--ink-soft); line-height: 1.65"
+            >
+              A reference companion to the parametric bird feeder KCL model.
+              Values here are starting points based on published body
+              measurements and field-tested cage-mesh selectivity research — not
+              field-validated calibrations. Tune based on observed visitors in
+              your yard.
+            </p>
+          </div>
+          <div>
+            <h4>Sources</h4>
+            <ul>
+              <li>Cornell Lab — All About Birds</li>
+              <li>BTO Bird Facts</li>
+              <li>Birdlife Australia</li>
+              <li>HANZAB</li>
+              <li>Project FeederWatch</li>
+              <li>Sibley Guide to Birds</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Project</h4>
+            <ul>
+              <li><a href="#">Repository</a></li>
+              <li><a href="#">KCL model</a></li>
+              <li><a href="#">Contribute a preset</a></li>
+              <li><a href="#">Issues</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="colophon">
+          <div>Species Selection Guide · v1.0 · Last updated 2026</div>
+          <div>Set in Fraunces & Inter Tight</div>
+        </div>
+      </div>
+    </footer>
+
+    <div class="toast" id="toast">Preset copied to clipboard</div>
+
+    <script>
+      document.querySelectorAll(".copy-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const text = btn.dataset.text;
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.classList.add("copied");
+            const label = btn.querySelector(".btn-label");
+            const original = label.textContent;
+            label.textContent = "Copied";
+
+            const toast = document.getElementById("toast");
+            toast.classList.add("show");
+
+            setTimeout(() => {
+              btn.classList.remove("copied");
+              label.textContent = original;
+              toast.classList.remove("show");
+            }, 1800);
+          } catch (err) {
+            console.error("Copy failed", err);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
