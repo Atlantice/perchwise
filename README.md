@@ -37,7 +37,7 @@ A KCL parametric model for 3D-printed bird feeders, with geometric selectivity t
 
 ### Interactive Species Guide
 
-Browse the live reference at **[perchwise.github.io](https://YOUR_USERNAME.github.io/perchwise/)** — preset values, species tables, selectivity methodology, and exclusion thresholds.
+Browse the live reference at **[perchwise.github.io](https://atlantice.github.io/perchwise/)** — preset values, species tables, selectivity methodology, and exclusion thresholds.
 
 ### Markdown Guide
 
@@ -99,6 +99,6 @@ Parametric source code (`feeder.kcl`) is provided as-is for personal and commerc
 
 ---
 
-**Questions?** Check the [Species Guide](./SPECIES_GUIDE.md), open an [issue](https://github.com/YOUR_USERNAME/perchwise/issues), or start a [discussion](https://github.com/YOUR_USERNAME/perchwise/discussions).
+**Questions?** Check the [Species Guide](./SPECIES_GUIDE.md), open an [issue](https://github.com/atlantice/perchwise/issues), or start a [discussion](https://github.com/atlantice/perchwise/discussions).
 
 **Want to contribute a region?** See [CONTRIBUTING.md](./CONTRIBUTING.md) (if you add one).
