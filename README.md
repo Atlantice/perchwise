@@ -1,6 +1,6 @@
 # Perchwise
 
-![Perchwise: a parametric bird feeder, tuned by species and region.](hero.png)
+![Perchwise: a parametric bird feeder, tuned by species and region.](hero.jpg)
 
 **Parametric bird feeder. Tune by species and region.**
 
