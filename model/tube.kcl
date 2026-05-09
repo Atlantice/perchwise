@@ -1,0 +1,170 @@
+// Tube/reservoir module for the parametric tube-style bird feeder.
+// Includes the hollow tube, closed base, feeding ports, drainage holes,
+// cleanout opening, and optional printed perches.
+
+@settings(defaultLengthUnit = mm, kclVersion = 1.0)
+
+import bodyColor, bodyOpacity, cleanoutOpeningRadius, drainageCutDepth, drainageHoleCenterRadius, drainageHoleRadius, numDrainageHoles, numPorts, perchCenterX, perchCenterZ, perchColor, perchLength, perchRadius, perchTiltAngle, perchTotalLength, portCutCenterRadius, portCutDepth, portHeightFromBase, portRadius, tubeHeight, tubeInnerRadius, tubeOuterRadius, wallThickness from "config.kcl"
+
+// Hollow cylindrical reservoir wall, open at top.
+tubeWallProfile = sketch(on = XY) {
+  outerCircle = circle(start = [var 40mm, var 0mm], center = [var 0mm, var 0mm])
+  innerCircle = circle(start = [var 37.6mm, var 0mm], center = [var 0mm, var 0mm])
+  wallRegionPick = point(at = [var 38.8mm, var 0mm])
+
+  coincident([outerCircle.center, ORIGIN])
+  coincident([innerCircle.center, ORIGIN])
+  horizontalDistance([outerCircle.center, outerCircle.start]) == tubeOuterRadius
+  verticalDistance([outerCircle.center, outerCircle.start]) == 0mm
+  horizontalDistance([innerCircle.center, innerCircle.start]) == tubeInnerRadius
+  verticalDistance([innerCircle.center, innerCircle.start]) == 0mm
+  horizontalDistance([ORIGIN, wallRegionPick]) == tubeOuterRadius - (wallThickness / 2)
+  verticalDistance([ORIGIN, wallRegionPick]) == 0mm
+}
+tubeWallRegion = region(point = tubeWallProfile.wallRegionPick)
+hide(tubeWallProfile)
+tubeWall = extrude(tubeWallRegion, length = tubeHeight)
+
+// Flat circular bottom closes the seed reservoir except for the removable cleanout plug.
+tubeBaseProfile = sketch(on = XY) {
+  baseCircle = circle(start = [var 40mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([baseCircle.center, ORIGIN])
+  horizontalDistance([baseCircle.center, baseCircle.start]) == tubeOuterRadius
+  verticalDistance([baseCircle.center, baseCircle.start]) == 0mm
+}
+tubeBaseRegion = region(point = [0mm, 0mm], sketch = tubeBaseProfile)
+hide(tubeBaseProfile)
+tubeBase = extrude(tubeBaseRegion, length = wallThickness)
+
+tubeBody = union([tubeWall, tubeBase])
+
+// One radial cylindrical cutter; circular pattern makes the full port set.
+portCutterProfile = sketch(on = YZ) {
+  portCircle = circle(start = [var 15mm, var 30mm], center = [var 0mm, var 30mm])
+  portRegionPick = point(at = [var 0mm, var 30mm])
+
+  horizontalDistance([ORIGIN, portCircle.center]) == 0mm
+  verticalDistance([ORIGIN, portCircle.center]) == portHeightFromBase
+  horizontalDistance([portCircle.center, portCircle.start]) == portRadius
+  verticalDistance([portCircle.center, portCircle.start]) == 0mm
+  horizontalDistance([ORIGIN, portRegionPick]) == 0mm
+  verticalDistance([ORIGIN, portRegionPick]) == portHeightFromBase
+}
+portCutterRegion = region(point = portCutterProfile.portRegionPick)
+hide(portCutterProfile)
+portCutter = extrude(portCutterRegion, length = portCutDepth, symmetric = true)
+  |> translate(x = portCutCenterRadius, global = true)
+portCutters = portCutter
+  |> patternCircular3d(
+       instances = numPorts,
+       axis = Z,
+       center = [0, 0, 0],
+       arcDegrees = 360deg,
+       rotateDuplicates = true,
+     )
+
+tubeWithPorts = subtract(tubeBody, tools = portCutters)
+
+// One vertical drainage cutter; circular pattern makes the full base drain set.
+drainageCutterProfile = sketch(on = XY) {
+  drainageCircle = circle(start = [var 29mm, var 0mm], center = [var 27.5mm, var 0mm])
+  drainageRegionPick = point(at = [var 27.5mm, var 0mm])
+
+  horizontalDistance([ORIGIN, drainageCircle.center]) == drainageHoleCenterRadius
+  verticalDistance([ORIGIN, drainageCircle.center]) == 0mm
+  horizontalDistance([
+  drainageCircle.center,
+  drainageCircle.start
+]) == drainageHoleRadius
+  verticalDistance([
+  drainageCircle.center,
+  drainageCircle.start
+]) == 0mm
+  horizontalDistance([ORIGIN, drainageRegionPick]) == drainageHoleCenterRadius
+  verticalDistance([ORIGIN, drainageRegionPick]) == 0mm
+}
+drainageCutterRegion = region(point = drainageCutterProfile.drainageRegionPick)
+hide(drainageCutterProfile)
+drainageCutter = extrude(drainageCutterRegion, length = drainageCutDepth, symmetric = true)
+  |> translate(z = wallThickness / 2, global = true)
+drainageCutters = drainageCutter
+  |> patternCircular3d(
+       instances = numDrainageHoles,
+       axis = Z,
+       center = [0, 0, 0],
+       arcDegrees = 360deg,
+       rotateDuplicates = true,
+     )
+
+tubeWithPortsAndDrainage = subtract(tubeWithPorts, tools = drainageCutters)
+
+// Central bottom opening cutter for the separate removable plug.
+cleanoutOpeningProfile = sketch(on = XY) {
+  openingCircle = circle(start = [var 11mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([openingCircle.center, ORIGIN])
+  horizontalDistance([
+  openingCircle.center,
+  openingCircle.start
+]) == cleanoutOpeningRadius
+  verticalDistance([
+  openingCircle.center,
+  openingCircle.start
+]) == 0mm
+}
+cleanoutOpeningRegion = region(point = [0mm, 0mm], sketch = cleanoutOpeningProfile)
+hide(cleanoutOpeningProfile)
+cleanoutOpeningCutter = extrude(cleanoutOpeningRegion, length = drainageCutDepth, symmetric = true)
+  |> translate(z = wallThickness / 2, global = true)
+
+tubeWithPortsDrainageAndCleanout = subtract(tubeWithPortsAndDrainage, tools = [cleanoutOpeningCutter])
+tubeWithPortsDrainageAndCleanoutColored = tubeWithPortsDrainageAndCleanout
+  |> appearance(color = bodyColor, roughness = 25, opacity = bodyOpacity)
+
+// One embedded perch rod; circular pattern aligns one perch below each port.
+perchProfile = sketch(on = YZ) {
+  perchCircle = circle(start = [var 3mm, var 0mm], center = [var 0mm, var 0mm])
+  perchRegionPick = point(at = [var 0mm, var 0mm])
+
+  coincident([perchCircle.center, ORIGIN])
+  horizontalDistance([perchCircle.center, perchCircle.start]) == perchRadius
+  verticalDistance([perchCircle.center, perchCircle.start]) == 0mm
+  horizontalDistance([ORIGIN, perchRegionPick]) == 0mm
+  verticalDistance([ORIGIN, perchRegionPick]) == 0mm
+}
+perchRegion = region(point = perchProfile.perchRegionPick)
+hide(perchProfile)
+perches = if perchLength > 0mm {
+  perchSeed = extrude(perchRegion, length = perchTotalLength, symmetric = true)
+    |> rotate(axis = Y, angle = perchTiltAngle)
+    |> translate(x = perchCenterX, z = perchCenterZ, global = true)
+  perchSeed
+    |> patternCircular3d(
+         instances = numPorts,
+         axis = Z,
+         center = [0, 0, 0],
+         arcDegrees = 360deg,
+         rotateDuplicates = true,
+       )
+} else {
+  []
+}
+perchesColored = if perchLength > 0mm {
+  perches
+    |> appearance(color = perchColor, roughness = 65)
+} else {
+  []
+}
+
+// Keep this module returning one tube/reservoir part. If perches are disabled,
+// return the tube directly so no one-solid union is required.
+tubeAssembly = if perchLength > 0mm {
+  tubeFeatureSolids0 = [
+    tubeWithPortsDrainageAndCleanoutColored
+  ]
+  tubeFeatureSolids = concat(tubeFeatureSolids0, items = perchesColored)
+  union(tubeFeatureSolids)
+} else {
+  tubeWithPortsDrainageAndCleanoutColored
+}

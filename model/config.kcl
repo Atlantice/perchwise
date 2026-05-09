@@ -1,0 +1,201 @@
+// Shared remix parameters and preset selection for the parametric tube-style bird feeder.
+// Edit `regionPreset` here to switch target bird populations.
+
+@settings(defaultLengthUnit = mm, kclVersion = 1.0)
+
+// Regional presets
+
+// easternUsSongbirds:    chickadees, titmice, nuthatches, finches.
+// Excludes grackles, starlings, house sparrows.
+export easternUsSongbirds = {
+  portDiameter = 30mm,
+  perchLength = 22mm,
+  perchAngleDeg = -15,
+  numPorts = 4,
+  roofOverhang = 18mm,
+  portHeightFromBase = 35mm
+}
+
+// ukGardenBirds: blue tit, great tit, robin, goldfinch, chaffinch.
+// Excludes starlings, magpies, feral pigeons.
+export ukGardenBirds = {
+  portDiameter = 32mm,
+  perchLength = 22mm,
+  perchAngleDeg = 0,
+  numPorts = 4,
+  roofOverhang = 22mm,
+  portHeightFromBase = 35mm
+}
+
+// pacificNorthwest: chestnut-backed chickadee, red-breasted nuthatch,
+// pine siskin. No perches — clinging birds only.
+export pacificNorthwest = {
+  portDiameter = 22mm,
+  perchLength = 0mm,
+  perchAngleDeg = 0,
+  numPorts = 3,
+  roofOverhang = 15mm,
+  portHeightFromBase = 50mm
+}
+
+// australianHoneyeaters: New Holland honeyeater, eastern spinebill,
+// white-plumed honeyeater. Wider ports for long slender beaks.
+export australianHoneyeaters = {
+  portDiameter = 38mm,
+  perchLength = 25mm,
+  perchAngleDeg = 0,
+  numPorts = 3,
+  roofOverhang = 28mm,
+  portHeightFromBase = 35mm
+}
+
+// Custom remix preset: safe starting point for manual edits.
+export customPreset = {
+  portDiameter = 40mm,
+  perchLength = 20mm,
+  perchAngleDeg = -30,
+  numPorts = 4,
+  roofOverhang = 50mm,
+  portHeightFromBase = 50mm
+}
+
+// Selected preset. Change this one line to reconfigure the feeder.
+export regionPreset = australianHoneyeaters
+
+// Capacity / reservoir
+// Reservoir height: change this to hold more or less seed between refills.
+export tubeHeight = 200mm
+
+// Reservoir outside diameter: change this for seed capacity and bird access clearance.
+export tubeDiameter = 80mm
+
+// Printed wall thickness: change this for FDM strength, nozzle size, and weather durability.
+export wallThickness = 2.4mm
+
+// Ports / bird access
+// Gap from the bottom edge of each port to the top of its perch rod.
+export perchClearanceBelowPort = 5mm
+
+// Perches
+// Perch rod diameter: change this for grip size and print strength.
+export perchDiameter = 6mm
+
+// Roof / weather
+// Roof rise above the tube top: change this for runoff angle and visual style.
+export roofHeight = 35mm
+
+// Roof facet count: change this for roof style; the circular edge pattern uses this value.
+export roofSides = 6
+
+// Hanging rod diameter: change this for hanger strength and string/wire compatibility.
+export hookDiameter = 4mm
+
+// Hanging rod height above the roof peak: change this for clearance from a branch or hook.
+export hookHeight = 30mm
+
+// Roof lip radial clearance inside the tube: change this to tune the removable friction fit.
+export roofLipRadialClearance = 0.4mm
+
+// Roof lip insertion height: change this to make the removable roof more or less stable on the tube.
+export roofLipHeight = 15mm
+
+// Tapered lead-in height on the roof lip insertion edge.
+export roofLipLeadInHeight = 3mm
+
+// Radial inset at the bottom of the tapered roof lip lead-in.
+export roofLipLeadInInset = 1.5mm
+
+// Cleanout / serviceability
+// Drainage hole diameter: change this to tune water drainage while keeping seed inside.
+export drainageHoleDiameter = 3mm
+
+// Drainage hole count: change this for faster drying or simpler printing.
+export numDrainageHoles = 4
+
+// Removable cleanout opening diameter in the bottom base.
+export cleanoutOpeningDiameter = 22mm
+
+// Plug clearance inside the cleanout opening for a removable fit.
+export cleanoutPlugRadialClearance = 0.35mm
+
+// Plug stem extension above the base disk to keep the cleanout seated.
+export cleanoutPlugInsertionHeight = 3mm
+
+// Plug lower flange diameter: larger than the cleanout opening so it stops below the base.
+export cleanoutFlangeDiameter = 34mm
+
+// Plug lower flange thickness for grip and sealing area.
+export cleanoutFlangeThickness = 3mm
+
+// Small pull knob under the cleanout plug.
+export cleanoutGripDiameter = 16mm
+
+// Pull knob height below the plug flange.
+export cleanoutGripHeight = 4mm
+
+// Print clearances / construction helpers
+export portCutExtra = 8mm
+export perchEmbedDepthExtra = 1mm
+export drainageCutExtra = 2mm
+export roofLipEmbedDepth = 1mm
+export hookEmbedDepthMultiplier = 1
+export plugJointOverlap = 0.2mm
+
+// Appearance
+// Body appearance: bone-white translucent seed reservoir tube.
+export bodyColor = "#F2EBE0"
+export bodyOpacity = 70
+
+// Roof appearance: warm terracotta removable cap.
+export roofColor = "#C4622D"
+
+// Perch appearance: saddle-brown rods.
+export perchColor = "#8B5E3C"
+
+// Hook appearance: matte black hanging rod.
+export hookColor = "#2A2A2A"
+
+// Cleanout plug appearance: dark brown removable plug so it reads as a different material.
+export cleanoutColor = "#3D2B1F"
+
+// Preset-driven dimensions
+export portDiameter = regionPreset.portDiameter
+export perchLength = regionPreset.perchLength
+export perchAngleDeg = regionPreset.perchAngleDeg
+export numPorts = regionPreset.numPorts
+export roofOverhang = regionPreset.roofOverhang
+export portHeightFromBase = regionPreset.portHeightFromBase
+
+// Derived dimensions
+export tubeOuterRadius = tubeDiameter / 2
+export tubeInnerRadius = tubeOuterRadius - wallThickness
+export portRadius = portDiameter / 2
+export portBottomZ = portHeightFromBase - portRadius
+export portCutDepth = wallThickness + portCutExtra
+export portCutCenterRadius = tubeOuterRadius - (wallThickness / 2)
+export perchRadius = perchDiameter / 2
+export perchEmbedDepth = wallThickness + perchEmbedDepthExtra
+export perchTotalLength = perchLength + perchEmbedDepth
+export perchAttachZ = portBottomZ - perchClearanceBelowPort - perchRadius
+export perchTiltAngle = -perchAngleDeg * 1deg
+export perchCenterX = tubeOuterRadius - perchEmbedDepth + perchTotalLength * cos(perchTiltAngle) / 2
+export perchCenterZ = perchAttachZ - (perchTotalLength * sin(perchTiltAngle) / 2)
+export drainageHoleRadius = drainageHoleDiameter / 2
+export cleanoutOpeningRadius = cleanoutOpeningDiameter / 2
+export cleanoutPlugStemRadius = cleanoutOpeningRadius - cleanoutPlugRadialClearance
+export cleanoutFlangeRadius = cleanoutFlangeDiameter / 2
+export cleanoutGripRadius = cleanoutGripDiameter / 2
+export drainageHoleCenterRadius = (tubeOuterRadius + cleanoutFlangeRadius) / 2
+export drainageCutDepth = wallThickness + drainageCutExtra
+export roofBaseRadius = tubeOuterRadius + roofOverhang
+export roofPeakZ = tubeHeight + roofHeight
+export roofPeakCapRadius = hookDiameter / 8
+export roofStepAngle = 360deg / roofSides
+export roofBaseNextX = roofBaseRadius * cos(roofStepAngle)
+export roofBaseNextY = roofBaseRadius * sin(roofStepAngle)
+export roofPeakNextX = roofPeakCapRadius * cos(roofStepAngle)
+export roofPeakNextY = roofPeakCapRadius * sin(roofStepAngle)
+export roofLipOuterRadius = tubeInnerRadius - roofLipRadialClearance
+export roofLipLeadInBottomRadius = roofLipOuterRadius - roofLipLeadInInset
+export hookRadius = hookDiameter / 2
+export hookEmbedDepth = hookDiameter * hookEmbedDepthMultiplier

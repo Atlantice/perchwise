@@ -1,0 +1,58 @@
+// Separate removable cleanout plug module for the parametric tube-style bird feeder.
+// Includes the insertion stem, lower stop flange, and pull knob.
+
+@settings(defaultLengthUnit = mm, kclVersion = 1.0)
+
+import cleanoutColor, cleanoutFlangeRadius, cleanoutFlangeThickness, cleanoutGripHeight, cleanoutGripRadius, cleanoutPlugInsertionHeight, cleanoutPlugStemRadius, plugJointOverlap, wallThickness from "config.kcl"
+
+// Plug stem seats inside the bottom cleanout opening.
+cleanoutStemPlane = offsetPlane(XY, offset = -plugJointOverlap)
+cleanoutStemProfile = sketch(on = cleanoutStemPlane) {
+  stemCircle = circle(start = [var 10.65mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([stemCircle.center, ORIGIN])
+  horizontalDistance([stemCircle.center, stemCircle.start]) == cleanoutPlugStemRadius
+  verticalDistance([stemCircle.center, stemCircle.start]) == 0mm
+}
+cleanoutStemRegion = region(point = [0mm, 0mm], sketch = cleanoutStemProfile)
+hide(cleanoutStemProfile)
+cleanoutStem = extrude(cleanoutStemRegion, length = wallThickness + cleanoutPlugInsertionHeight + plugJointOverlap)
+
+// Lower flange stops the removable plug below the base disk.
+cleanoutFlangePlane = offsetPlane(XY, offset = -cleanoutFlangeThickness)
+cleanoutFlangeProfile = sketch(on = cleanoutFlangePlane) {
+  flangeCircle = circle(start = [var 17mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([flangeCircle.center, ORIGIN])
+  horizontalDistance([
+  flangeCircle.center,
+  flangeCircle.start
+]) == cleanoutFlangeRadius
+  verticalDistance([
+  flangeCircle.center,
+  flangeCircle.start
+]) == 0mm
+}
+cleanoutFlangeRegion = region(point = [0mm, 0mm], sketch = cleanoutFlangeProfile)
+hide(cleanoutFlangeProfile)
+cleanoutFlange = extrude(cleanoutFlangeRegion, length = cleanoutFlangeThickness + plugJointOverlap)
+
+// Pull knob under the plug flange.
+cleanoutGripPlane = offsetPlane(XY, offset = -cleanoutFlangeThickness - cleanoutGripHeight)
+cleanoutGripProfile = sketch(on = cleanoutGripPlane) {
+  gripCircle = circle(start = [var 8mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([gripCircle.center, ORIGIN])
+  horizontalDistance([gripCircle.center, gripCircle.start]) == cleanoutGripRadius
+  verticalDistance([gripCircle.center, gripCircle.start]) == 0mm
+}
+cleanoutGripRegion = region(point = [0mm, 0mm], sketch = cleanoutGripProfile)
+hide(cleanoutGripProfile)
+cleanoutGrip = extrude(cleanoutGripRegion, length = cleanoutGripHeight + plugJointOverlap)
+
+cleanoutPlugAssembly = union([
+  cleanoutStem,
+  cleanoutFlange,
+  cleanoutGrip
+])
+  |> appearance(color = cleanoutColor, roughness = 70)

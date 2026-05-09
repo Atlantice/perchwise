@@ -1,0 +1,15 @@
+// Parametric tube-style bird feeder assembly.
+// Geometry is split into modules so configuration, part construction,
+// and assembly stay clean and remixable.
+
+@settings(defaultLengthUnit = mm, kclVersion = 1.0)
+
+import "tube.kcl" as tube
+import "roof.kcl" as roof
+import "cleanoutPlug.kcl" as cleanoutPlug
+
+// Keep the fillable tube, removable roof, and removable cleanout plug
+// as separate top-level bodies. Do not union the full assembly.
+tube
+roof
+cleanoutPlug

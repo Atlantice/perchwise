@@ -1,0 +1,139 @@
+// Removable roof module for the parametric tube-style bird feeder.
+// Includes the roof body, underside friction-fit lip, tapered lead-in, and attached hook.
+
+@settings(defaultLengthUnit = mm, kclVersion = 1.0)
+
+import hookColor, hookEmbedDepth, hookHeight, hookRadius, plugJointOverlap, roofBaseNextX, roofBaseNextY, roofBaseRadius, roofColor, roofLipEmbedDepth, roofLipHeight, roofLipLeadInBottomRadius, roofLipLeadInHeight, roofLipOuterRadius, roofPeakCapRadius, roofPeakNextX, roofPeakNextY, roofPeakZ, roofSides, tubeHeight from "config.kcl"
+
+// Umbrella roof lofted from a patterned n-sided base to a tiny n-sided peak cap.
+roofBasePlane = offsetPlane(XY, offset = tubeHeight)
+roofBaseEdgeProfile = sketch(on = roofBasePlane) {
+  // Solver seed values are literal starting guesses; constraints below drive actual preset radius/angle.
+  roofBaseEdge = line(start = [var 58mm, var 0mm], end = [var 29mm, var 50.22947mm])
+  roofBasePick = point(at = [var 0mm, var 0mm])
+
+  horizontalDistance([ORIGIN, roofBaseEdge.start]) == roofBaseRadius
+  verticalDistance([ORIGIN, roofBaseEdge.start]) == 0mm
+  horizontalDistance([ORIGIN, roofBaseEdge.end]) == roofBaseNextX
+  verticalDistance([ORIGIN, roofBaseEdge.end]) == roofBaseNextY
+  horizontalDistance([ORIGIN, roofBasePick]) == 0mm
+  verticalDistance([ORIGIN, roofBasePick]) == 0mm
+}
+roofBaseEdges = roofBaseEdgeProfile
+  |> patternCircular2d(
+       instances = roofSides,
+       center = [0, 0],
+       arcDegrees = 360deg,
+       rotateDuplicates = true,
+     )
+roofBaseRegion = region(point = [0mm, 0mm], sketch = roofBaseEdges)
+hide(roofBaseEdgeProfile)
+
+roofPeakPlane = offsetPlane(XY, offset = roofPeakZ)
+roofPeakEdgeProfile = sketch(on = roofPeakPlane) {
+  roofPeakEdge = line(start = [var 0.5mm, var 0mm], end = [var 0.25mm, var 0.433013mm])
+  roofPeakPick = point(at = [var 0mm, var 0mm])
+
+  horizontalDistance([ORIGIN, roofPeakEdge.start]) == roofPeakCapRadius
+  verticalDistance([ORIGIN, roofPeakEdge.start]) == 0mm
+  horizontalDistance([ORIGIN, roofPeakEdge.end]) == roofPeakNextX
+  verticalDistance([ORIGIN, roofPeakEdge.end]) == roofPeakNextY
+  horizontalDistance([ORIGIN, roofPeakPick]) == 0mm
+  verticalDistance([ORIGIN, roofPeakPick]) == 0mm
+}
+roofPeakEdges = roofPeakEdgeProfile
+  |> patternCircular2d(
+       instances = roofSides,
+       center = [0, 0],
+       arcDegrees = 360deg,
+       rotateDuplicates = true,
+     )
+roofPeakRegion = region(point = [0mm, 0mm], sketch = roofPeakEdges)
+hide(roofPeakEdgeProfile)
+roofBody = loft([roofBaseRegion, roofPeakRegion])
+roofBodyColored = roofBody
+  |> appearance(color = roofColor, roughness = 55)
+
+// Centered removable friction-fit lip protrudes down inside the open tube.
+roofLipBasePlane = offsetPlane(XY, offset = tubeHeight - roofLipHeight)
+roofLipProfile = sketch(on = roofLipBasePlane) {
+  roofLipCircle = circle(start = [var 37.2mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([roofLipCircle.center, ORIGIN])
+  horizontalDistance([
+  roofLipCircle.center,
+  roofLipCircle.start
+]) == roofLipOuterRadius
+  verticalDistance([
+  roofLipCircle.center,
+  roofLipCircle.start
+]) == 0mm
+}
+roofLipRegion = region(point = [0mm, 0mm], sketch = roofLipProfile)
+hide(roofLipProfile)
+roofLip = extrude(roofLipRegion, length = roofLipHeight + roofLipEmbedDepth)
+roofLipColored = roofLip
+  |> appearance(color = roofColor, roughness = 55)
+
+// Tapered lower lead-in on the removable lip for easier insertion and cleaner FDM edge.
+roofLipLeadInBottomPlane = offsetPlane(XY, offset = tubeHeight - roofLipHeight - roofLipLeadInHeight)
+roofLipLeadInBottomProfile = sketch(on = roofLipLeadInBottomPlane) {
+  leadInBottomCircle = circle(start = [var 35.7mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([leadInBottomCircle.center, ORIGIN])
+  horizontalDistance([
+  leadInBottomCircle.center,
+  leadInBottomCircle.start
+]) == roofLipLeadInBottomRadius
+  verticalDistance([
+  leadInBottomCircle.center,
+  leadInBottomCircle.start
+]) == 0mm
+}
+roofLipLeadInBottomRegion = region(point = [0mm, 0mm], sketch = roofLipLeadInBottomProfile)
+hide(roofLipLeadInBottomProfile)
+
+roofLipLeadInTopPlane = offsetPlane(XY, offset = tubeHeight - roofLipHeight + plugJointOverlap)
+roofLipLeadInTopProfile = sketch(on = roofLipLeadInTopPlane) {
+  leadInTopCircle = circle(start = [var 37.2mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([leadInTopCircle.center, ORIGIN])
+  horizontalDistance([
+  leadInTopCircle.center,
+  leadInTopCircle.start
+]) == roofLipOuterRadius
+  verticalDistance([
+  leadInTopCircle.center,
+  leadInTopCircle.start
+]) == 0mm
+}
+roofLipLeadInTopRegion = region(point = [0mm, 0mm], sketch = roofLipLeadInTopProfile)
+hide(roofLipLeadInTopProfile)
+roofLipLeadIn = loft([
+  roofLipLeadInBottomRegion,
+  roofLipLeadInTopRegion
+])
+roofLipLeadInColored = roofLipLeadIn
+  |> appearance(color = roofColor, roughness = 55)
+
+// Simple vertical rod embedded into the roof peak for a strong roof-only union.
+hookBasePlane = offsetPlane(XY, offset = roofPeakZ - hookEmbedDepth)
+hookProfile = sketch(on = hookBasePlane) {
+  hookCircle = circle(start = [var 2mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([hookCircle.center, ORIGIN])
+  horizontalDistance([hookCircle.center, hookCircle.start]) == hookRadius
+  verticalDistance([hookCircle.center, hookCircle.start]) == 0mm
+}
+hookRegion = region(point = [0mm, 0mm], sketch = hookProfile)
+hide(hookProfile)
+hookRod = extrude(hookRegion, length = hookHeight + hookEmbedDepth)
+hookRodColored = hookRod
+  |> appearance(color = hookColor, metalness = 20, roughness = 35)
+
+roofAssembly = union([
+  roofBodyColored,
+  roofLipColored,
+  roofLipLeadInColored,
+  hookRodColored
+])

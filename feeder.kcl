@@ -1,0 +1,532 @@
+// Parametric tube-style bird feeder
+// Solver-sketch construction with named, top-level feature blocks for easy remixing.
+
+@settings(defaultLengthUnit = mm, kclVersion = 1.0)
+
+// Reservoir height: change this to hold more or less seed between refills.
+tubeHeight = 200
+
+// Reservoir outside diameter: change this for seed capacity and bird access clearance.
+tubeDiameter = 80
+
+// Printed wall thickness: change this for FDM strength, nozzle size, and weather durability.
+wallThickness = 2.4
+
+// Perch rod diameter: change this for grip size and print strength.
+perchDiameter = 6
+
+// Gap from the bottom edge of each port to the top of its perch rod.
+perchClearanceBelowPort = 5
+
+// Roof rise above the tube top: change this for runoff angle and visual style.
+roofHeight = 35
+
+// Roof facet count: change this for roof style; the circular edge pattern uses this value.
+roofSides = 6
+
+// Hanging rod diameter: change this for hanger strength and string/wire compatibility.
+hookDiameter = 4
+
+// Hanging rod height above the roof peak: change this for clearance from a branch or hook.
+hookHeight = 30
+
+// Drainage hole diameter: change this to tune water drainage while keeping seed inside.
+drainageHoleDiameter = 3
+
+// Drainage hole count: change this for faster drying or simpler printing.
+numDrainageHoles = 4
+
+// Roof lip radial clearance inside the tube: change this to tune the removable friction fit.
+roofLipRadialClearance = 0.4
+
+// Roof lip insertion height: change this to make the removable roof more or less stable on the tube.
+roofLipHeight = 15
+
+// Removable cleanout opening diameter in the bottom base.
+cleanoutOpeningDiameter = 22
+
+// Plug clearance inside the cleanout opening for a removable fit.
+cleanoutPlugRadialClearance = 0.35
+
+// Plug stem extension above the base disk to keep the cleanout seated.
+cleanoutPlugInsertionHeight = 3
+
+// Plug lower flange diameter: larger than the cleanout opening so it stops below the base.
+cleanoutFlangeDiameter = 34
+
+// Plug lower flange thickness for grip and sealing area.
+cleanoutFlangeThickness = 3
+
+// Small pull knob under the cleanout plug.
+cleanoutGripDiameter = 16
+
+// Pull knob height below the plug flange.
+cleanoutGripHeight = 4
+
+// Tapered lead-in height on the roof lip insertion edge.
+roofLipLeadInHeight = 3
+
+// Radial inset at the bottom of the tapered roof lip lead-in.
+roofLipLeadInInset = 1.5
+
+// Body appearance: bone-white translucent seed reservoir tube.
+bodyColor = "#F2EBE0"
+bodyOpacity = 70
+
+// Roof appearance: warm terracotta removable cap.
+roofColor = "#C4622D"
+
+// Perch appearance: saddle-brown rods.
+perchColor = "#8B5E3C"
+
+// Hook appearance: matte black hanging rod.
+hookColor = "#2A2A2A"
+
+// Cleanout plug appearance: dark brown removable plug so it reads as a different material.
+cleanoutColor = "#3D2B1F"
+
+// Regional presets — change `regionPreset` below to reconfigure the feeder
+// for a different target bird population.
+//
+// easternUsSongbirds:    chickadees, titmice, nuthatches, finches.
+// Excludes grackles, starlings, house sparrows.
+// ukGardenBirds:         blue tit, great tit, robin, goldfinch, chaffinch.
+// Excludes starlings, magpies, feral pigeons.
+// pacificNorthwest:      chestnut-backed chickadee, red-breasted nuthatch,
+// pine siskin. No perches — clinging birds only.
+// australianHoneyeaters: New Holland honeyeater, eastern spinebill,
+// white-plumed honeyeater. Wider ports for
+// long slender beaks.
+easternUsSongbirds = {
+  portDiameter = 30,
+  perchLength = 22,
+  perchAngleDeg = -15,
+  numPorts = 4,
+  roofOverhang = 18,
+  portHeightFromBase = 35
+}
+
+ukGardenBirds = {
+  portDiameter = 32,
+  perchLength = 22,
+  perchAngleDeg = 0,
+  numPorts = 4,
+  roofOverhang = 22,
+  portHeightFromBase = 35
+}
+
+pacificNorthwest = {
+  portDiameter = 22,
+  perchLength = 0,
+  perchAngleDeg = 0,
+  numPorts = 3,
+  roofOverhang = 15,
+  portHeightFromBase = 50
+}
+
+australianHoneyeaters = {
+  portDiameter = 38,
+  perchLength = 25,
+  perchAngleDeg = 0,
+  numPorts = 3,
+  roofOverhang = 28,
+  portHeightFromBase = 35
+}
+
+customPreset = {
+  portDiameter = 40,
+  perchLength = 20,
+  perchAngleDeg = -30,
+  numPorts = 4,
+  roofOverhang = 50,
+  portHeightFromBase = 50
+}
+
+regionPreset = customPreset
+
+// Preset-driven dimensions exposed as local names so the geometry below stays readable.
+portDiameter = regionPreset.portDiameter
+perchLength = regionPreset.perchLength
+perchAngleDeg = regionPreset.perchAngleDeg
+numPorts = regionPreset.numPorts
+roofOverhang = regionPreset.roofOverhang
+portHeightFromBase = regionPreset.portHeightFromBase
+
+// Derived dimensions kept near the parameter block for easy remixing.
+tubeOuterRadius = tubeDiameter / 2
+tubeInnerRadius = tubeOuterRadius - wallThickness
+portRadius = portDiameter / 2
+portBottomZ = portHeightFromBase - portRadius
+portCutExtra = 8
+portCutDepth = wallThickness + portCutExtra
+portCutCenterRadius = tubeOuterRadius - (wallThickness / 2)
+perchRadius = perchDiameter / 2
+perchEmbedDepth = wallThickness + 1
+perchTotalLength = perchLength + perchEmbedDepth
+perchAttachZ = portBottomZ - perchClearanceBelowPort - perchRadius
+perchTiltAngle = -perchAngleDeg * 1deg
+perchCenterX = tubeOuterRadius - perchEmbedDepth + perchTotalLength * cos(perchTiltAngle) / 2
+perchCenterZ = perchAttachZ - (perchTotalLength * sin(perchTiltAngle) / 2)
+drainageHoleRadius = drainageHoleDiameter / 2
+cleanoutOpeningRadius = cleanoutOpeningDiameter / 2
+cleanoutPlugStemRadius = cleanoutOpeningRadius - cleanoutPlugRadialClearance
+cleanoutFlangeRadius = cleanoutFlangeDiameter / 2
+cleanoutGripRadius = cleanoutGripDiameter / 2
+drainageHoleCenterRadius = (tubeOuterRadius + cleanoutFlangeRadius) / 2
+drainageCutDepth = wallThickness + 2
+roofBaseRadius = tubeOuterRadius + roofOverhang
+roofPeakZ = tubeHeight + roofHeight
+roofPeakCapRadius = hookDiameter / 8
+roofStepAngle = 360deg / roofSides
+roofBaseNextX = roofBaseRadius * cos(roofStepAngle)
+roofBaseNextY = roofBaseRadius * sin(roofStepAngle)
+roofPeakNextX = roofPeakCapRadius * cos(roofStepAngle)
+roofPeakNextY = roofPeakCapRadius * sin(roofStepAngle)
+roofLipOuterRadius = tubeInnerRadius - roofLipRadialClearance
+roofLipLeadInBottomRadius = roofLipOuterRadius - roofLipLeadInInset
+roofLipEmbedDepth = 1
+hookRadius = hookDiameter / 2
+hookEmbedDepth = hookDiameter
+plugJointOverlap = 0.2
+
+// tube(): hollow cylindrical reservoir wall, open at top.
+tubeWallProfile = sketch(on = XY) {
+  outerCircle = circle(start = [var 40mm, var 0mm], center = [var 0mm, var 0mm])
+  innerCircle = circle(start = [var 37.6mm, var 0mm], center = [var 0mm, var 0mm])
+  wallRegionPick = point(at = [var 38.8mm, var 0mm])
+
+  coincident([outerCircle.center, ORIGIN])
+  coincident([innerCircle.center, ORIGIN])
+  horizontalDistance([outerCircle.center, outerCircle.start]) == tubeOuterRadius
+  verticalDistance([outerCircle.center, outerCircle.start]) == 0mm
+  horizontalDistance([innerCircle.center, innerCircle.start]) == tubeInnerRadius
+  verticalDistance([innerCircle.center, innerCircle.start]) == 0mm
+  horizontalDistance([ORIGIN, wallRegionPick]) == tubeOuterRadius - (wallThickness / 2)
+  verticalDistance([ORIGIN, wallRegionPick]) == 0mm
+}
+tubeWallRegion = region(point = tubeWallProfile.wallRegionPick)
+hide(tubeWallProfile)
+tubeWall = extrude(tubeWallRegion, length = tubeHeight)
+
+// tube(): flat circular bottom closes the seed reservoir except for the removable cleanout plug.
+tubeBaseProfile = sketch(on = XY) {
+  baseCircle = circle(start = [var 40mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([baseCircle.center, ORIGIN])
+  horizontalDistance([baseCircle.center, baseCircle.start]) == tubeOuterRadius
+  verticalDistance([baseCircle.center, baseCircle.start]) == 0mm
+}
+tubeBaseRegion = region(point = [0mm, 0mm], sketch = tubeBaseProfile)
+hide(tubeBaseProfile)
+tubeBase = extrude(tubeBaseRegion, length = wallThickness)
+
+tubeBody = union([tubeWall, tubeBase])
+
+// port(): one radial cylindrical cutter; circular pattern makes the full port set.
+portCutterProfile = sketch(on = YZ) {
+  portCircle = circle(start = [var 15mm, var 30mm], center = [var 0mm, var 30mm])
+  portRegionPick = point(at = [var 0mm, var 30mm])
+
+  horizontalDistance([ORIGIN, portCircle.center]) == 0mm
+  verticalDistance([ORIGIN, portCircle.center]) == portHeightFromBase
+  horizontalDistance([portCircle.center, portCircle.start]) == portRadius
+  verticalDistance([portCircle.center, portCircle.start]) == 0mm
+  horizontalDistance([ORIGIN, portRegionPick]) == 0mm
+  verticalDistance([ORIGIN, portRegionPick]) == portHeightFromBase
+}
+portCutterRegion = region(point = portCutterProfile.portRegionPick)
+hide(portCutterProfile)
+portCutter = extrude(portCutterRegion, length = portCutDepth, symmetric = true)
+  |> translate(x = portCutCenterRadius, global = true)
+portCutters = portCutter
+  |> patternCircular3d(
+       instances = numPorts,
+       axis = Z,
+       center = [0, 0, 0],
+       arcDegrees = 360deg,
+       rotateDuplicates = true,
+     )
+
+tubeWithPorts = subtract(tubeBody, tools = portCutters)
+
+// tube(): one vertical drainage cutter; circular pattern makes the full base drain set.
+drainageCutterProfile = sketch(on = XY) {
+  drainageCircle = circle(start = [var 29.0mm, var 0mm], center = [var 27.5mm, var 0mm])
+  drainageRegionPick = point(at = [var 27.5mm, var 0mm])
+
+  horizontalDistance([ORIGIN, drainageCircle.center]) == drainageHoleCenterRadius
+  verticalDistance([ORIGIN, drainageCircle.center]) == 0mm
+  horizontalDistance([
+  drainageCircle.center,
+  drainageCircle.start
+]) == drainageHoleRadius
+  verticalDistance([
+  drainageCircle.center,
+  drainageCircle.start
+]) == 0mm
+  horizontalDistance([ORIGIN, drainageRegionPick]) == drainageHoleCenterRadius
+  verticalDistance([ORIGIN, drainageRegionPick]) == 0mm
+}
+drainageCutterRegion = region(point = drainageCutterProfile.drainageRegionPick)
+hide(drainageCutterProfile)
+drainageCutter = extrude(drainageCutterRegion, length = drainageCutDepth, symmetric = true)
+  |> translate(z = wallThickness / 2, global = true)
+drainageCutters = drainageCutter
+  |> patternCircular3d(
+       instances = numDrainageHoles,
+       axis = Z,
+       center = [0, 0, 0],
+       arcDegrees = 360deg,
+       rotateDuplicates = true,
+     )
+
+tubeWithPortsAndDrainage = subtract(tubeWithPorts, tools = drainageCutters)
+
+// cleanout(): central bottom opening cutter for the separate removable plug.
+cleanoutOpeningProfile = sketch(on = XY) {
+  openingCircle = circle(start = [var 11mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([openingCircle.center, ORIGIN])
+  horizontalDistance([
+  openingCircle.center,
+  openingCircle.start
+]) == cleanoutOpeningRadius
+  verticalDistance([
+  openingCircle.center,
+  openingCircle.start
+]) == 0mm
+}
+cleanoutOpeningRegion = region(point = [0mm, 0mm], sketch = cleanoutOpeningProfile)
+hide(cleanoutOpeningProfile)
+cleanoutOpeningCutter = extrude(cleanoutOpeningRegion, length = drainageCutDepth, symmetric = true)
+  |> translate(z = wallThickness / 2, global = true)
+
+tubeWithPortsDrainageAndCleanout = subtract(tubeWithPortsAndDrainage, tools = [cleanoutOpeningCutter])
+tubeWithPortsDrainageAndCleanoutColored = tubeWithPortsDrainageAndCleanout
+  |> appearance(color = bodyColor, roughness = 25, opacity = bodyOpacity)
+
+// perch(): one embedded perch rod; circular pattern aligns one perch below each port.
+perchProfile = sketch(on = YZ) {
+  perchCircle = circle(start = [var 3mm, var 0mm], center = [var 0mm, var 0mm])
+  perchRegionPick = point(at = [var 0mm, var 0mm])
+
+  coincident([perchCircle.center, ORIGIN])
+  horizontalDistance([perchCircle.center, perchCircle.start]) == perchRadius
+  verticalDistance([perchCircle.center, perchCircle.start]) == 0mm
+  horizontalDistance([ORIGIN, perchRegionPick]) == 0mm
+  verticalDistance([ORIGIN, perchRegionPick]) == 0mm
+}
+perchRegion = region(point = perchProfile.perchRegionPick)
+hide(perchProfile)
+perches = if perchLength > 0 {
+  perchSeed = extrude(perchRegion, length = perchTotalLength, symmetric = true)
+    |> rotate(axis = Y, angle = perchTiltAngle)
+    |> translate(x = perchCenterX, z = perchCenterZ, global = true)
+  perchSeed
+    |> patternCircular3d(
+         instances = numPorts,
+         axis = Z,
+         center = [0, 0, 0],
+         arcDegrees = 360deg,
+         rotateDuplicates = true,
+       )
+} else {
+  []
+}
+perchesColored = if perchLength > 0 {
+  perches
+    |> appearance(color = perchColor, roughness = 65)
+} else {
+  []
+}
+
+// roof(): umbrella roof lofted from a patterned n-sided base to a tiny n-sided peak cap.
+roofBasePlane = offsetPlane(XY, offset = tubeHeight)
+roofBaseEdgeProfile = sketch(on = roofBasePlane) {
+  roofBaseEdge = line(start = [var 58mm, var 0mm], end = [var 29mm, var 50.22947mm])
+  roofBasePick = point(at = [var 0mm, var 0mm])
+
+  horizontalDistance([ORIGIN, roofBaseEdge.start]) == roofBaseRadius
+  verticalDistance([ORIGIN, roofBaseEdge.start]) == 0mm
+  horizontalDistance([ORIGIN, roofBaseEdge.end]) == roofBaseNextX
+  verticalDistance([ORIGIN, roofBaseEdge.end]) == roofBaseNextY
+  horizontalDistance([ORIGIN, roofBasePick]) == 0mm
+  verticalDistance([ORIGIN, roofBasePick]) == 0mm
+}
+roofBaseEdges = roofBaseEdgeProfile
+  |> patternCircular2d(
+       instances = roofSides,
+       center = [0, 0],
+       arcDegrees = 360deg,
+       rotateDuplicates = true,
+     )
+roofBaseRegion = region(point = [0mm, 0mm], sketch = roofBaseEdges)
+hide(roofBaseEdgeProfile)
+
+roofPeakPlane = offsetPlane(XY, offset = roofPeakZ)
+roofPeakEdgeProfile = sketch(on = roofPeakPlane) {
+  roofPeakEdge = line(start = [var 0.5mm, var 0mm], end = [var 0.25mm, var 0.433013mm])
+  roofPeakPick = point(at = [var 0mm, var 0mm])
+
+  horizontalDistance([ORIGIN, roofPeakEdge.start]) == roofPeakCapRadius
+  verticalDistance([ORIGIN, roofPeakEdge.start]) == 0mm
+  horizontalDistance([ORIGIN, roofPeakEdge.end]) == roofPeakNextX
+  verticalDistance([ORIGIN, roofPeakEdge.end]) == roofPeakNextY
+  horizontalDistance([ORIGIN, roofPeakPick]) == 0mm
+  verticalDistance([ORIGIN, roofPeakPick]) == 0mm
+}
+roofPeakEdges = roofPeakEdgeProfile
+  |> patternCircular2d(
+       instances = roofSides,
+       center = [0, 0],
+       arcDegrees = 360deg,
+       rotateDuplicates = true,
+     )
+roofPeakRegion = region(point = [0mm, 0mm], sketch = roofPeakEdges)
+hide(roofPeakEdgeProfile)
+roofBody = loft([roofBaseRegion, roofPeakRegion])
+roofBodyColored = roofBody
+  |> appearance(color = roofColor, roughness = 55)
+
+// roof(): centered removable friction-fit lip protrudes down inside the open tube.
+roofLipBasePlane = offsetPlane(XY, offset = tubeHeight - roofLipHeight)
+roofLipProfile = sketch(on = roofLipBasePlane) {
+  roofLipCircle = circle(start = [var 37.2mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([roofLipCircle.center, ORIGIN])
+  horizontalDistance([
+  roofLipCircle.center,
+  roofLipCircle.start
+]) == roofLipOuterRadius
+  verticalDistance([
+  roofLipCircle.center,
+  roofLipCircle.start
+]) == 0mm
+}
+roofLipRegion = region(point = [0mm, 0mm], sketch = roofLipProfile)
+hide(roofLipProfile)
+roofLip = extrude(roofLipRegion, length = roofLipHeight + roofLipEmbedDepth)
+roofLipColored = roofLip
+  |> appearance(color = roofColor, roughness = 55)
+
+// roof(): tapered lower lead-in on the removable lip for easier insertion and cleaner FDM edge.
+roofLipLeadInBottomPlane = offsetPlane(XY, offset = tubeHeight - roofLipHeight - roofLipLeadInHeight)
+roofLipLeadInBottomProfile = sketch(on = roofLipLeadInBottomPlane) {
+  leadInBottomCircle = circle(start = [var 35.7mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([leadInBottomCircle.center, ORIGIN])
+  horizontalDistance([
+  leadInBottomCircle.center,
+  leadInBottomCircle.start
+]) == roofLipLeadInBottomRadius
+  verticalDistance([
+  leadInBottomCircle.center,
+  leadInBottomCircle.start
+]) == 0mm
+}
+roofLipLeadInBottomRegion = region(point = [0mm, 0mm], sketch = roofLipLeadInBottomProfile)
+hide(roofLipLeadInBottomProfile)
+
+roofLipLeadInTopPlane = offsetPlane(XY, offset = tubeHeight - roofLipHeight + plugJointOverlap)
+roofLipLeadInTopProfile = sketch(on = roofLipLeadInTopPlane) {
+  leadInTopCircle = circle(start = [var 37.2mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([leadInTopCircle.center, ORIGIN])
+  horizontalDistance([
+  leadInTopCircle.center,
+  leadInTopCircle.start
+]) == roofLipOuterRadius
+  verticalDistance([
+  leadInTopCircle.center,
+  leadInTopCircle.start
+]) == 0mm
+}
+roofLipLeadInTopRegion = region(point = [0mm, 0mm], sketch = roofLipLeadInTopProfile)
+hide(roofLipLeadInTopProfile)
+roofLipLeadIn = loft([
+  roofLipLeadInBottomRegion,
+  roofLipLeadInTopRegion
+])
+roofLipLeadInColored = roofLipLeadIn
+  |> appearance(color = roofColor, roughness = 55)
+
+// hook(): simple vertical rod embedded into the roof peak for a strong roof-only union.
+hookBasePlane = offsetPlane(XY, offset = roofPeakZ - hookEmbedDepth)
+hookProfile = sketch(on = hookBasePlane) {
+  hookCircle = circle(start = [var 2mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([hookCircle.center, ORIGIN])
+  horizontalDistance([hookCircle.center, hookCircle.start]) == hookRadius
+  verticalDistance([hookCircle.center, hookCircle.start]) == 0mm
+}
+hookRegion = region(point = [0mm, 0mm], sketch = hookProfile)
+hide(hookProfile)
+hookRod = extrude(hookRegion, length = hookHeight + hookEmbedDepth)
+hookRodColored = hookRod
+  |> appearance(color = hookColor, metalness = 20, roughness = 35)
+
+// cleanout(): separate removable bottom plug with stem, stop flange, and pull knob.
+cleanoutStemPlane = offsetPlane(XY, offset = -plugJointOverlap)
+cleanoutStemProfile = sketch(on = cleanoutStemPlane) {
+  stemCircle = circle(start = [var 10.65mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([stemCircle.center, ORIGIN])
+  horizontalDistance([stemCircle.center, stemCircle.start]) == cleanoutPlugStemRadius
+  verticalDistance([stemCircle.center, stemCircle.start]) == 0mm
+}
+cleanoutStemRegion = region(point = [0mm, 0mm], sketch = cleanoutStemProfile)
+hide(cleanoutStemProfile)
+cleanoutStem = extrude(cleanoutStemRegion, length = wallThickness + cleanoutPlugInsertionHeight + plugJointOverlap)
+
+cleanoutFlangePlane = offsetPlane(XY, offset = -cleanoutFlangeThickness)
+cleanoutFlangeProfile = sketch(on = cleanoutFlangePlane) {
+  flangeCircle = circle(start = [var 17mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([flangeCircle.center, ORIGIN])
+  horizontalDistance([
+  flangeCircle.center,
+  flangeCircle.start
+]) == cleanoutFlangeRadius
+  verticalDistance([
+  flangeCircle.center,
+  flangeCircle.start
+]) == 0mm
+}
+cleanoutFlangeRegion = region(point = [0mm, 0mm], sketch = cleanoutFlangeProfile)
+hide(cleanoutFlangeProfile)
+cleanoutFlange = extrude(cleanoutFlangeRegion, length = cleanoutFlangeThickness + plugJointOverlap)
+
+cleanoutGripPlane = offsetPlane(XY, offset = -cleanoutFlangeThickness - cleanoutGripHeight)
+cleanoutGripProfile = sketch(on = cleanoutGripPlane) {
+  gripCircle = circle(start = [var 8mm, var 0mm], center = [var 0mm, var 0mm])
+
+  coincident([gripCircle.center, ORIGIN])
+  horizontalDistance([gripCircle.center, gripCircle.start]) == cleanoutGripRadius
+  verticalDistance([gripCircle.center, gripCircle.start]) == 0mm
+}
+cleanoutGripRegion = region(point = [0mm, 0mm], sketch = cleanoutGripProfile)
+hide(cleanoutGripProfile)
+cleanoutGrip = extrude(cleanoutGripRegion, length = cleanoutGripHeight + plugJointOverlap)
+cleanoutPlugAssembly = union([
+  cleanoutStem,
+  cleanoutFlange,
+  cleanoutGrip
+])
+  |> appearance(color = cleanoutColor, roughness = 70)
+
+// Final output keeps the fillable tube, removable roof, and removable cleanout plug as separate solid bodies.
+tubeFeatureSolids0 = [
+  tubeWithPortsDrainageAndCleanoutColored
+]
+tubeFeatureSolids = if perchLength > 0 {
+  concat(tubeFeatureSolids0, items = perchesColored)
+} else {
+  tubeFeatureSolids0
+}
+tubeAssembly = union(tubeFeatureSolids)
+roofAssembly = union([
+  roofBodyColored,
+  roofLipColored,
+  roofLipLeadInColored,
+  hookRodColored
+])
